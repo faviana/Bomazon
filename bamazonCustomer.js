@@ -19,9 +19,10 @@ var connection = mysql.createConnection({
 
 connection.connect(function (err) {
   if (err) throw (err);
+
   // console.log("connected as id " + connection.threadId);
   display();
- 
+
 });
 
 //function to display all items from my database bamazon
@@ -38,49 +39,57 @@ function display() {
       console.log("Id: " + results[i].item_id + " | Name: " + results[i].product_name + " | Price: " + results[i].price);
     }
     console.log("__________________________________________________");
+    console.log("");
 
-    promptUser();
+    promptUserId();
   });
 }
 
 // function to prompt user to enter a selection
-function promptUser() {
+function promptUserId() {
   inquirer
     .prompt([{
       //prompt to select by ID
-        name: "id",
-        type: "input",
-        message: "What is the ID of the product you would like to buy?",
-        validate: function (value) {
-          if (isNaN(value) === false) {
-            return true;
-          }else{
-          return false;
-          }
-        }
-      },
-      {
-        //prompt to select how many units
-        name: "units",
-        type: "input",
-        message: "How many units of the product would you like to buy?",
-        validate: function (value) {
-          if (isNaN(value) === false) {
-            return true;
-          }else{
-          return false;
-        }
-      }
-      }
-    ])
+      name: "item_id",
+      type: "input",
+      message: "What is the ID of the product you would like to buy?",
+    }])
     .then(function (answer) {
-      var chosenItem;
-      for (var i = 0; i < results.length; i++) {
-        if (results[i].item_id === answer.id) {
-          chosenItem = results[i];
-          console.log(chosenItem);
+      var query = "SELECT * FROM products WHERE ?";
+      connection.query(query, {
+        item_id: answer.item_id
+      }, function (err, results) {
+        for (var i = 0; i < results.length; i++) {
+          console.log("");
+          console.log("Id:" + results[i].item_id + " || Name: " + results[i].product_name + " || Price: $" + results[i].price + ".00");
+          console.log("");
+
+          promptUserQuantity();
         }
-      }
+
+      });
+    });
+}
+
+// function to prompt user to enter a selection
+function promptUserQuantity() {
+  inquirer
+    .prompt([{
+      name: "stock_quantity",
+      type: "input",
+      message: "How many would you like?",
+    }])
+    .then(function (answer) {
+      var query = "SELECT * FROM products WHERE ?";
+      connection.query(query, {
+        item_id: answer.item_id
+      }, function (err, results) {
+        for (var i = 0; i < results.length; i++) {
+          console.log("");
+          console.log(+stock_quantity, results[i].product_name + "for " + results[i].price + ".00 /each");
+        }
+
+      });
     });
 }
 
@@ -97,3 +106,5 @@ function promptUser() {
 //    -have a nice day
 //  Yes:
 //    -promptUser();
+
+// add category
