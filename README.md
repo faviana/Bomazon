@@ -18,6 +18,8 @@ Revise package.json
 
 ## Deployment
 
+![image](images/part1.png)
+
 Needs packege manager npm
 npm install inquirer
 npm install mysql
