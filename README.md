@@ -12,6 +12,7 @@ deploy
 
 know npm
 
+qw
 ### Installing
 
 Revise package.json
