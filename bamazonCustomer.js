@@ -20,7 +20,7 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
   if (err) throw (err);
 
-  // console.log("connected as id " + connection.threadId);
+  console.log("connected as id " + connection.threadId);
   display();
 
 });
@@ -34,9 +34,9 @@ function display() {
     console.log("==========Below is a list of our items==========");
 
     for (var i = 0; i < results.length; i++) {
-      console.log("________________________________________________");
-      console.log("");
-      console.log("Id: " + results[i].item_id + " | Name: " + results[i].product_name + " | Price: " + results[i].price);
+       console.log("________________________________________________");
+       console.log("");
+       console.log("Id: " + results[i].item_id + " | Name: " + results[i].product_name + " | Price: " + results[i].price);
     }
     console.log("__________________________________________________");
     console.log("");
@@ -50,16 +50,25 @@ function promptUserId() {
   inquirer
     .prompt([{
       //prompt to select by ID
-      name: "item_id",
+      name: "id",
       type: "input",
-      message: "What is the ID of the product you would like to buy?",
-    }])
-    .then(function (answer) {
+      message: "select the ID of the product you would like to purchase (1-10)",
+
+      //validate id
+      validate: function(value){
+        if(value.match(/^[0-9]+$/)){
+          return true
+        }
+          return 'Enter a numercal value between 1 and 10'
+      }
+    }]).then(function (answer) {
+
       var query = "SELECT * FROM products WHERE ?";
-      connection.query(query, {
-        item_id: answer.item_id
-      }, function (err, results) {
+
+      connection.query(query, {item_id: answer.id}, function (err, results) {
+
         for (var i = 0; i < results.length; i++) {
+
           console.log("");
           console.log("Id:" + results[i].item_id + " || Name: " + results[i].product_name + " || Price: $" + results[i].price + ".00");
           console.log("");
@@ -73,26 +82,38 @@ function promptUserId() {
 
 // function to prompt user to enter a selection
 function promptUserQuantity() {
+
   inquirer
     .prompt([{
-      name: "stock_quantity",
+
+      name: "quantity",
       type: "input",
       message: "How many would you like?",
-    }])
-    .then(function (answer) {
-      var query = "SELECT * FROM products WHERE ?";
-      connection.query(query, {
-        item_id: answer.item_id
-      }, function (err, results) {
-        for (var i = 0; i < results.length; i++) {
-          console.log("");
-          console.log(+stock_quantity, results[i].product_name + "for " + results[i].price + ".00 /each");
+
+      //validate id
+      validate: function(value){
+        if(value.match(/^[0-9]+$/)){
+          return true
         }
+          return 'Enter a value between 1 and 10'
+      }
+    }]).then(function(answer){
 
+      var query = "SELECT * FROM products WHERE ?";
+        connection.query(query, {stock_quantity: answer.quantity}, function (err, results) {
+
+          for (var i = 0; i < results.length; i++) {
+  
+            console.log("");
+            console.log("Id:" + results[i].item_id + " || Name: " + results[i].product_name + " || Price: $" + results[i].price + ".00");
+            console.log("");
+  
+            newPrompt();
+          }
+  
+        });
       });
-    });
-}
-
+  }
 //adjust inventory ...
 //  enough product?
 //      No: 
@@ -101,10 +122,20 @@ function promptUserQuantity() {
 //        -update units in database
 //        -show user total cost of purchase (number of units * price of item)
 
-//would you like to make another purchase?
-//  No:
-//    -have a nice day
-//  Yes:
-//    -promptUser();
+function newPrompt(){
+	inquirer.prompt([{
+		type: 'confirm',
+		name: 'choice',
+		message: 'Would you like to place another order?'
+	}]).then(function(answer){
+		if(answer.choice){
+      promptUserId();
+		}
+		else{
+			console.log('Thank you for visiting at Bamazon');
+			connection.end();
+		}
+	})
+};
 
 // add category
